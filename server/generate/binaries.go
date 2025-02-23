@@ -700,6 +700,38 @@ func getCrossCompilersFromEnv(targetGoos string, targetGoarch string) (string, s
 	return cc, cxx
 }
 
+// FindMatchingFile function lists all files in the given directory
+// and finds the one that starts with the given prefix
+func FindMatchingFile(directory, prefix string) (string, error) {
+	// Walk through the files in the directory
+	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !info.IsDir() && strings.HasPrefix(info.Name(), "aarch64-apple-") {
+			// If file matches, return the file path
+			if strings.HasPrefix(path, prefix) {
+				// Found the matching file
+				fmt.Println("Found matching file:", path)
+				return fmt.Errorf("found the matching file: %s", path) // Use error to stop walking
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		if strings.Contains(err.Error(), "found the matching file") {
+			// Successfully found the matching file
+			return err.Error(), nil
+		}
+		return "", fmt.Errorf("error walking the directory: %v", err)
+	}
+
+	return "", fmt.Errorf("no file found with the prefix %s", prefix)
+}
+
 func findCrossCompilers(targetGOOS string, targetGOARCH string) (string, string) {
 
 	// Get CC and CXX from ENV -- First Priority
@@ -767,7 +799,18 @@ func findCrossCompilers(targetGOOS string, targetGOARCH string) (string, string)
 		}
 		if targetGOARCH == "arm64" && cc == "" {
 			buildLog.Debugf("Using default osxcross cc/cxx for %s/%s", targetGOOS, targetGOARCH)
-			cc = "/opt/osxcross/target/bin/aarch64-apple-darwin20.2-clang"
+            // Define the directory to search in
+	        directory := "/opt/osxcross/target/bin/"
+	        // Define the prefix to match against
+	        prefix := "aarch64-apple-"
+            // Call the function to find the matching file
+	        matchingFile, err := FindMatchingFile(directory, prefix)
+	        if err != nil {
+		        fmt.Println("Error:", err)
+	        } else {
+		        fmt.Println("Matching file:", matchingFile)
+	        }            
+			cc = matchingFile
 			if cxx == "" {
 				cxx = cc
 			}
