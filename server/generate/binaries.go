@@ -709,7 +709,7 @@ func FindMatchingFile(directory, prefix string) (string, error) {
 			return err
 		}
 
-		if !info.IsDir() && strings.HasPrefix(info.Name(), prefix) {
+		if !info.IsDir() && strings.Contains(info.Name(), prefix) && strings.HasSuffix(info.Name(), "-clang") {
 		    // If file matches, return the file path
 		    fmt.Println("Found matching file:", path)
 		    return fmt.Errorf("found the matching file: %s", path) // Use error to stop walking
