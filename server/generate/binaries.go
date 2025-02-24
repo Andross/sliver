@@ -709,13 +709,10 @@ func FindMatchingFile(directory, prefix string) (string, error) {
 			return err
 		}
 
-		if !info.IsDir() && strings.HasPrefix(info.Name(), "aarch64-apple-") {
-			// If file matches, return the file path
-			if strings.HasPrefix(path, prefix) {
-				// Found the matching file
-				fmt.Println("Found matching file:", path)
-				return fmt.Errorf("found the matching file: %s", path) // Use error to stop walking
-			}
+		if !info.IsDir() && strings.HasPrefix(info.Name(), prefix) {
+		    // If file matches, return the file path
+		    fmt.Println("Found matching file:", path)
+		    return fmt.Errorf("found the matching file: %s", path) // Use error to stop walking
 		}
 
 		return nil
